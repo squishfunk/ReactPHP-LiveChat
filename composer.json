@@ -1,0 +1,12 @@
+{
+    "require": {
+        "react/socket": "^1.14"
+    },
+    "autoload": {
+        "psr-4": {
+            "Squishfunk\\LiveChat\\": [
+                "src/"
+            ]
+        }
+    }
+}
