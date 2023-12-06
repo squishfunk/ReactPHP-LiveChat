@@ -21,12 +21,26 @@ class ConnectionsHandler
 
     public function handle(ConnectionInterface $connection){
         $this->connections->attach($connection);
+        
+        $connection->write("Welcome on the chat!\n");
+        $connection->write("Your username: ");
 
         $connection->on('data', function ($data) use ($connection) {
-            $this->sendMessegeToOthers($connection, $data);
+        	$username = $this->getConnectionName($connection);
+        	if(empty($username)){
+        		$name = str_replace(["\n", "\r"], '', $data);
+        		$this->setConnectionName($connection, $name);
+				$this->sendMessegeToOthers($connection, "New user $name joined the chat!");
+        		return;
+        	}
+        
+            $this->sendMessegeToOthers($connection, $username . ': ' . $data);
         });
+        
         $connection->on('close', function() use($connection) {
-            $this->sendMessegeToOthers($connection, sprintf('User %s has left the chat', $connection->getRemoteAddress()));
+        	$username = $this->getConnectionName($connection);
+			$this->connections->offsetUnset($connection);
+            $this->sendMessegeToOthers($connection, "User $username has left the chat \n");
         });
     }
 
@@ -37,5 +51,15 @@ class ConnectionsHandler
             }
         }
     }
+    
+    function setConnectionName(ConnectionInterface $connection, $name)
+    {
+    	$this->connections->offsetSet($connection, $name);
+    }
+	
+	function getConnectionName(ConnectionInterface $connection)
+	{
+		return $this->connections->offsetGet($connection);
+	}
 
 }

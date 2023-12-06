@@ -7,9 +7,12 @@ require 'vendor/autoload.php';
 
 $connectionHandler = new ConnectionsHandler();
 
-$server = new React\Socket\SocketServer('127.0.0.1:8000');
+$address = '127.0.0.1:8000';
+
+$server = new React\Socket\SocketServer($address);
+
+echo "Server started on $address\n";
 $server->on('connection', function (ConnectionInterface $connection) use ($connectionHandler) {
-    echo 'New connection: '. $connection->getRemoteAddress();
     $connectionHandler->handle($connection);
 });
 
