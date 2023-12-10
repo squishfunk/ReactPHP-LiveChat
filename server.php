@@ -1,7 +1,7 @@
 <?php
 
 use React\Socket\ConnectionInterface;
-use Squishfunk\LiveChat\ConnectionsHandler;
+use Squishfunk\LiveChat\Server\ConnectionsHandler;
 
 require 'vendor/autoload.php';
 

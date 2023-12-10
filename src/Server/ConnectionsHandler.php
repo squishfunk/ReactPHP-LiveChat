@@ -1,6 +1,6 @@
 <?php
 
-namespace Squishfunk\LiveChat;
+namespace Squishfunk\LiveChat\Server;
 
 use React\Socket\ConnectionInterface;
 use SplObjectStorage;
@@ -30,7 +30,7 @@ class ConnectionsHandler
         	if(empty($username)){
         		$name = str_replace(["\n", "\r"], '', $data);
         		$this->setConnectionName($connection, $name);
-				$this->sendMessegeToOthers($connection, "New user $name joined the chat!");
+				$this->sendMessegeToOthers($connection, "New user $name joined the chat! \n");
         		return;
         	}
         
