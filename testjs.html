@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Chat Client</title>
+</head>
+<body>
+
+<input type="text" id="messageInput" placeholder="Wpisz wiadomość">
+<button onclick="sendMessage()">Wyślij</button>
+<div id="chatOutput"></div>
+
+<script>
+	const socket = new WebSocket('ws://localhost:8000'); // Ustaw port zgodnie z portem, na którym uruchomiony jest serwer PHP
+
+	socket.addEventListener('open', (event) => {
+		console.log('Połączono z serwerem WebSocket');
+	});
+
+	socket.addEventListener('message', (event) => {
+		const chatOutput = document.getElementById('chatOutput');
+		chatOutput.innerHTML += '<p>' + event.data + '</p>';
+	});
+
+	socket.addEventListener('close', (event) => {
+		console.log('Połączenie z serwerem zostało zamknięte');
+	});
+
+	socket.addEventListener('error', (error) => {
+		console.error('Błąd połączenia z serwerem WebSocket:', error);
+	});
+
+	function sendMessage() {
+		const messageInput = document.getElementById('messageInput');
+		const message = messageInput.value;
+		socket.send(message);
+		messageInput.value = '';
+	}
+</script>
+
+</body>
+</html>

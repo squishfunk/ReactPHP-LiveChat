@@ -1,18 +1,60 @@
 <?php
-
-use React\Socket\ConnectionInterface;
-use Squishfunk\LiveChat\Server\ConnectionsHandler;
-
 require 'vendor/autoload.php';
 
-$connectionHandler = new ConnectionsHandler();
+use Ratchet\Http\HttpServer;
+use Ratchet\MessageComponentInterface;
+use Ratchet\ConnectionInterface;
+use Ratchet\Server\IoServer;
+use Ratchet\WebSocket\WsServer;
 
-$address = '127.0.0.1:8000';
+class Chat implements MessageComponentInterface
+{
+    protected $clients;
 
-$server = new React\Socket\SocketServer($address);
+    public function __construct()
+    {
+        $this->clients = new \SplObjectStorage;
+    }
 
-echo "Server started on $address\n";
-$server->on('connection', function (ConnectionInterface $connection) use ($connectionHandler) {
-    $connectionHandler->handle($connection);
-});
+    public function onOpen(ConnectionInterface $conn)
+    {
+        $this->clients->attach($conn);
+        echo "Nowe połączenie! ({$conn->resourceId})\n";
+    }
 
+    public function onMessage(ConnectionInterface $from, $msg)
+    {
+        $numRecv = count($this->clients) - 1;
+        echo sprintf('Otrzymałem wiadomość od %d: %s' . "\n", $from->resourceId, $msg);
+
+        foreach ($this->clients as $client) {
+            if ($from !== $client) {
+                $client->send($msg);
+            }
+        }
+    }
+
+    public function onClose(ConnectionInterface $conn)
+    {
+        $this->clients->detach($conn);
+        echo "Połączenie {$conn->resourceId} zostało zamknięte\n";
+    }
+
+    public function onError(ConnectionInterface $conn, \Exception $e)
+    {
+        echo "Błąd: {$e->getMessage()}\n";
+
+        $conn->close();
+    }
+}
+
+$server = IoServer::factory(
+    new HttpServer(
+        new WsServer(new Chat())
+    ),
+    8000  // zmieniony port
+);
+
+echo "Serwer uruchomiony na porcie 8000...\n";
+
+$server->run();
